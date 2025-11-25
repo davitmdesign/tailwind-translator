@@ -868,11 +868,22 @@
     function borderClass(value) {
       const parts = value.split(/\s+/).filter(Boolean);
       const classes = [];
-      let widthPart = parts.find(p => p.includes("px"));
-      let colorPart = parts.find(p => /^#|rgb|hsl|[a-z]/i.test(p));
+
+      const stylePart = parts.find(p => ["solid", "dashed", "dotted", "double"].includes(p.toLowerCase()));
+      const widthPart = parts.find(p => /^-?\d+(px)?$/i.test(p));
+      const colorPart = parts.find(p => {
+        if (p === widthPart || p === stylePart) return false;
+        return /^#|^rgb|^hsl|^var\(/i.test(p) || /^[a-z]+$/i.test(p);
+      });
+
       if (widthPart) classes.push(borderWidthClass(widthPart));
+      if (stylePart) {
+        const map = { dashed: "border-dashed", dotted: "border-dotted", double: "border-double", solid: "border" };
+        classes.push(map[stylePart.toLowerCase()] || "border");
+      }
       if (colorPart) classes.push(colorToClass("border", colorPart));
-      if (!widthPart && !colorPart && value.trim() === "none") classes.push("border-0");
+      if (!widthPart && !colorPart && !stylePart && value.trim() === "none") classes.push("border-0");
+      if (!classes.length && value.trim()) classes.push(`border-[${value.trim()}]`);
       return classes;
     }
 

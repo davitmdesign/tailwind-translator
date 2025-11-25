@@ -6,6 +6,7 @@ Webbasierter Tailwind Generator: CSS/SCSS-Deklarationen einfügen und direkt als
 - `index.html` im Browser öffnen (kein Build, keine Abhängigkeiten).
 - Links CSS/SCSS einkopieren, rechts die generierten Tailwind-Klassen kopieren.
 - Nicht zugeordnete Deklarationen werden gelistet und auf Tailwinds Arbitrary Values (`[...]`) zurückgeführt, falls möglich.
+- Media Queries mit Standard-Breakpoints (z. B. `@media (min-width: 768px)` oder `(width >= 40rem)`) werden als `sm:`, `md:`, `lg:`, `xl:`, `2xl:` Präfixe ausgegeben.
 
 ## GitHub Pages veröffentlichen
 1. Repo auf GitHub pushen (Name: `tailwind-translator`).

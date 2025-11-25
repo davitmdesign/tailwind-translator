@@ -600,6 +600,12 @@
       "letter-spacing": value => [letterSpacingClass(value)],
       "text-transform": value => [textTransformMap[value.trim().toLowerCase()] || `normal-case`],
       "text-align": value => [textAlignMap[value.trim().toLowerCase()] || `text-[${value.trim()}]`],
+      "font-style": value => {
+        const key = value.trim().toLowerCase();
+        if (key === "italic" || key === "oblique") return ["italic"];
+        if (key === "normal") return ["not-italic"];
+        return [`font-style-[${value.trim()}]`];
+      },
       "display": value => [displayMap[value.trim().toLowerCase()] || `hidden`],
       "visibility": value => [visibilityClass(value)],
       "flex-direction": value => [flexDirectionMap[value.trim().toLowerCase()] || `flex-row`],
@@ -650,6 +656,14 @@
       "scrollbar-color": value => [arbitraryProperty("scrollbar-color", value)],
       "scrollbar-width": value => [arbitraryProperty("scrollbar-width", value)],
       "box-shadow": value => [boxShadowClass(value)],
+      "user-select": value => {
+        const key = value.trim().toLowerCase();
+        if (key === "none") return ["select-none"];
+        if (key === "text") return ["select-text"];
+        if (key === "all") return ["select-all"];
+        if (key === "auto") return ["select-auto"];
+        return [`select-[${value.trim()}]`];
+      },
       "opacity": value => [opacityClass(value)],
       "z-index": value => [zIndexClass(value)],
       "position": value => [positionMap[value.trim().toLowerCase()] || `relative`],

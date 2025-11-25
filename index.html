@@ -622,6 +622,10 @@
       return `${prefix}-[${value.trim()}]`;
     }
 
+    function arbitraryValue(value) {
+      return value.trim().replace(/\s+/g, "_");
+    }
+
     function pickFontSize(value) {
       const val = value.trim().toLowerCase();
       let px = null;
@@ -680,7 +684,7 @@
       if (normalized.includes("0 1px 3px") || normalized.includes("0 4px 6px")) return "shadow";
       if (normalized.includes("0 10px 15px")) return "shadow-lg";
       if (normalized.includes("0 20px 25px") || normalized.includes("0 25px 50px")) return "shadow-xl";
-      return `shadow-[${value.trim()}]`;
+      return `shadow-[${arbitraryValue(value)}]`;
     }
 
     function widthHeight(prefix, value) {

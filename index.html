@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tailwind Generator: konvertiere CSS/SCSS Deklarationen in Tailwind Utility-Klassen zum schnellen Copy-Paste.">
+  <meta name="keywords" content="tailwind generator, css to tailwind, tailwind translator, css converter, tailwind classes, scss to tailwind">
+  <title>Tailwind Übersetzer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #0f172a;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-strong: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.15);
+      --text: #e2e8f0;
+      --accent: #a855f7;
+      --accent-2: #22d3ee;
+      --muted: #94a3b8;
+      --success: #10b981;
+      font-family: "Poppins", "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(1200px circle at 15% 20%, rgba(34, 211, 238, 0.14), transparent 40%),
+                  radial-gradient(900px circle at 80% 10%, rgba(168, 85, 247, 0.24), transparent 42%),
+                  radial-gradient(1000px circle at 50% 80%, rgba(14, 165, 233, 0.18), transparent 45%),
+                  linear-gradient(135deg, #0b1222, #0f172a 55%, #0b1222);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 32px 18px 48px;
+    }
+
+    .frame {
+      width: min(1200px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      backdrop-filter: blur(14px) saturate(120%);
+      box-shadow: 0 16px 70px rgba(0, 0, 0, 0.4);
+    }
+
+    .header {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-size: 22px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(34, 211, 238, 0.25));
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    .description {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 1000px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(130deg, rgba(168, 85, 247, 0.2), rgba(34, 211, 238, 0.08));
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 320px;
+      resize: vertical;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(168, 85, 247, 0.7);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(34, 211, 238, 0.25));
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 6px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+
+    .stat .value {
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      background: rgba(34, 211, 238, 0.2);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      color: #c4f1f9;
+    }
+
+    .output-area {
+      position: relative;
+    }
+
+    .ghost {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 120ms ease, transform 120ms ease;
+    }
+
+    .ghost:hover {
+      border-color: rgba(34, 211, 238, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .support {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .unsupported {
+      margin-top: 10px;
+      border: 1px dashed rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.06);
+      color: #fecdd3;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: none;
+      gap: 8px;
+    }
+
+    .unsupported.visible {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .unsupported ul {
+      padding-left: 18px;
+      margin: 0;
+      color: #fecdd3;
+      display: grid;
+      gap: 4px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="header">
+      <div class="title">
+        <span class="pill">CSS → Tailwind</span>
+        Tailwind Translator Studio
+      </div>
+      <div class="actions">
+        <button id="convertBtn">Übersetzen</button>
+        <button id="copyBtn" class="secondary">Tailwind kopieren</button>
+      </div>
+    </div>
+    <p class="description">
+      Füge deine CSS/SCSS Deklarationen links ein. Der Generator zerlegt die Styles, mappt sie auf Tailwind Klassen
+      und spuckt rechts eine kopierbare Class-Liste aus. Unterstützt viele gängige Layout-, Typo- und Spacing-Regeln
+      und fällt für Spezialfälle auf Tailwinds arbitrary values <code>[...]</code> zurück.
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="label">Konvertierte Klassen</div>
+        <div class="value" id="classCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Nicht zugeordnet</div>
+        <div class="value" id="unsupportedCount">0 <span class="badge">Review nötig</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Live-Sync</div>
+        <div class="value"><span id="liveState" class="badge">aktiv</span></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <label for="cssInput">CSS / SCSS Input</label>
+        <textarea id="cssInput" spellcheck="false" placeholder=".card {
+  padding: 12px 20px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}"></textarea>
+        <div class="hint">Tipp: Shorthands wie <code>margin: 0 auto</code> und Flex/Grid-Angaben werden erkannt.</div>
+      </div>
+      <div class="panel output-area">
+        <label for="tailwindOutput">Tailwind Klassen</label>
+        <textarea id="tailwindOutput" readonly spellcheck="false" placeholder="m-3 px-5 bg-slate-900 text-slate-100 rounded-lg flex gap-2 items-center"></textarea>
+        <button class="ghost" id="clearBtn">Eingabe leeren</button>
+        <div class="support" id="statusText">Bereit.</div>
+        <div class="unsupported" id="unsupportedBox">
+          <strong>Nicht zugeordnete Deklarationen</strong>
+          <ul id="unsupportedList"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const spacingScale = [
+      0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20,
+      24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96
+    ];
+
+    const fractionMap = {
+      "100%": "full",
+      "50%": "1/2",
+      "33.333%": "1/3",
+      "33.33%": "1/3",
+      "66.667%": "2/3",
+      "66.66%": "2/3",
+      "25%": "1/4",
+      "75%": "3/4",
+      "20%": "1/5",
+      "40%": "2/5",
+      "60%": "3/5",
+      "80%": "4/5",
+      "16.666%": "1/6",
+      "16.667%": "1/6",
+      "83.333%": "5/6",
+      "83.334%": "5/6"
+    };
+
+    const fontSizeMap = [
+      { px: 12, tw: "text-xs" },
+      { px: 14, tw: "text-sm" },
+      { px: 16, tw: "text-base" },
+      { px: 18, tw: "text-lg" },
+      { px: 20, tw: "text-xl" },
+      { px: 24, tw: "text-2xl" },
+      { px: 30, tw: "text-3xl" },
+      { px: 36, tw: "text-4xl" },
+      { px: 48, tw: "text-5xl" },
+      { px: 60, tw: "text-6xl" },
+      { px: 72, tw: "text-7xl" },
+      { px: 96, tw: "text-8xl" },
+      { px: 128, tw: "text-9xl" }
+    ];
+
+    const weightMap = {
+      "100": "font-thin",
+      "200": "font-extralight",
+      "300": "font-light",
+      "400": "font-normal",
+      "500": "font-medium",
+      "600": "font-semibold",
+      "700": "font-bold",
+      "800": "font-extrabold",
+      "900": "font-black",
+      "normal": "font-normal",
+      "bold": "font-bold",
+      "bolder": "font-semibold",
+      "lighter": "font-light"
+    };
+
+    const displayMap = {
+      "block": "block",
+      "inline": "inline",
+      "inline-block": "inline-block",
+      "flex": "flex",
+      "inline-flex": "inline-flex",
+      "grid": "grid",
+      "inline-grid": "inline-grid",
+      "none": "hidden"
+    };
+
+    const flexDirectionMap = {
+      "row": "flex-row",
+      "row-reverse": "flex-row-reverse",
+      "column": "flex-col",
+      "column-reverse": "flex-col-reverse"
+    };
+
+    const justifyMap = {
+      "flex-start": "justify-start",
+      "start": "justify-start",
+      "center": "justify-center",
+      "flex-end": "justify-end",
+      "end": "justify-end",
+      "space-between": "justify-between",
+      "space-around": "justify-around",
+      "space-evenly": "justify-evenly"
+    };
+
+    const alignItemsMap = {
+      "flex-start": "items-start",
+      "start": "items-start",
+      "center": "items-center",
+      "flex-end": "items-end",
+      "end": "items-end",
+      "stretch": "items-stretch",
+      "baseline": "items-baseline"
+    };
+
+    const textAlignMap = {
+      "left": "text-left",
+      "center": "text-center",
+      "right": "text-right",
+      "justify": "text-justify"
+    };
+
+    const alignContentMap = {
+      "flex-start": "content-start",
+      "start": "content-start",
+      "center": "content-center",
+      "flex-end": "content-end",
+      "end": "content-end",
+      "space-between": "content-between",
+      "space-around": "content-around",
+      "stretch": "content-stretch"
+    };
+
+    const textTransformMap = {
+      "uppercase": "uppercase",
+      "lowercase": "lowercase",
+      "capitalize": "capitalize",
+      "none": "normal-case"
+    };
+
+    const letterSpacingMap = [
+      { em: -0.05, tw: "tracking-tighter" },
+      { em: -0.025, tw: "tracking-tight" },
+      { em: 0, tw: "tracking-normal" },
+      { em: 0.025, tw: "tracking-wide" },
+      { em: 0.05, tw: "tracking-wider" },
+      { em: 0.1, tw: "tracking-widest" }
+    ];
+
+    const positionMap = {
+      "static": "static",
+      "relative": "relative",
+      "absolute": "absolute",
+      "fixed": "fixed",
+      "sticky": "sticky"
+    };
+
+    const overflowMap = {
+      "visible": "overflow-visible",
+      "hidden": "overflow-hidden",
+      "scroll": "overflow-scroll",
+      "auto": "overflow-auto"
+    };
+
+    const namedColorMap = {
+      "#000": "black",
+      "#000000": "black",
+      "#fff": "white",
+      "#ffffff": "white",
+      "black": "black",
+      "white": "white",
+      "transparent": "transparent",
+      "currentcolor": "current",
+      "current-color": "current"
+    };
+
+    function parseDeclarations(input) {
+      const cleaned = input.replace(/\/\*[\s\S]*?\*\//g, "");
+      const regex = /([a-zA-Z-]+)\s*:\s*([^;{}]+)\s*[;}]?/g;
+      const declarations = [];
+      let match;
+      while ((match = regex.exec(cleaned)) !== null) {
+        declarations.push({ property: match[1].toLowerCase(), value: match[2].trim() });
+      }
+      return declarations;
+    }
+
+    function numberFromLength(raw) {
+      const value = raw.trim();
+      const negative = value.startsWith("-");
+      const normalized = negative ? value.slice(1) : value;
+      if (normalized === "0" || normalized === "0px") return { type: "spacing", units: 0, negative };
+      if (normalized.endsWith("px")) return { type: "spacing", units: parseFloat(normalized) / 4, negative };
+      if (normalized.endsWith("rem")) return { type: "spacing", units: parseFloat(normalized) * 4, negative };
+      if (/^\\d+(\\.\\d+)?$/.test(normalized)) return { type: "spacing", units: parseFloat(normalized), negative };
+      return { type: "raw", raw: value, negative };
+    }
+
+    function closestSpacingUnit(units) {
+      let best = spacingScale[0];
+      let bestDiff = Math.abs(units - best);
+      for (const candidate of spacingScale) {
+        const diff = Math.abs(units - candidate);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = candidate;
+        }
+      }
+      return best;
+    }
+
+    function buildSpacing(prefix, raw) {
+      const val = raw.trim().toLowerCase();
+      if (val === "auto") return `${prefix}-auto`;
+      const parsed = numberFromLength(raw);
+      if (parsed.type !== "spacing") return `${parsed.negative ? "-" : ""}${prefix}-[${raw.trim()}]`;
+      const unit = closestSpacingUnit(parsed.units);
+      return `${parsed.negative ? "-" : ""}${prefix}-${unit % 1 === 0 ? unit : unit.toString().replace(/\\.0$/, "")}`;
+    }
+
+    function handleBoxSpacing(prefix, value) {
+      const tokens = value.split(/\\s+/).filter(Boolean);
+      if (tokens.length === 1) {
+        if (tokens[0].toLowerCase() === "auto") return [`${prefix}-auto`];
+        return [buildSpacing(prefix, tokens[0])];
+      }
+      if (tokens.length === 2) {
+        const [y, x] = tokens;
+        const classes = [];
+        const xAuto = x.toLowerCase() === "auto";
+        const yAuto = y.toLowerCase() === "auto";
+        if (prefix === "m") {
+          if (xAuto && yAuto) return ["m-auto"];
+          if (xAuto) classes.push("mx-auto");
+          if (yAuto) classes.push("my-auto");
+        }
+        if (!yAuto) classes.push(buildSpacing(prefix + "y", y));
+        if (!xAuto) classes.push(buildSpacing(prefix + "x", x));
+        return classes;
+      }
+      if (tokens.length === 3) {
+        const [t, x, b] = tokens;
+        return [buildSpacing(prefix + "t", t), buildSpacing(prefix + "x", x), buildSpacing(prefix + "b", b)];
+      }
+      if (tokens.length >= 4) {
+        const [t, r, b, l] = tokens;
+        return [
+          buildSpacing(prefix + "t", t),
+          buildSpacing(prefix + "r", r),
+          buildSpacing(prefix + "b", b),
+          buildSpacing(prefix + "l", l)
+        ];
+      }
+      return [];
+    }
+
+    function handleGap(value, axis) {
+      const parts = value.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) return [buildSpacing(axis ? `gap-${axis}` : "gap", value)];
+      if (parts.length >= 2) {
+        const [rowGap, colGap] = parts;
+        return [buildSpacing("gap-y", rowGap), buildSpacing("gap-x", colGap)];
+      }
+      return [];
+    }
+
+    function colorToClass(prefix, value) {
+      const normalized = value.trim().toLowerCase();
+      if (namedColorMap[normalized]) return `${prefix}-${namedColorMap[normalized]}`;
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value.trim())) return `${prefix}-[${value.trim()}]`;
+      if (normalized.startsWith("rgb") || normalized.startsWith("hsl")) return `${prefix}-[${value.trim()}]`;
+      return `${prefix}-[${value.trim()}]`;
+    }
+
+    function pickFontSize(value) {
+      const val = value.trim().toLowerCase();
+      let px = null;
+      if (val.endsWith("px")) px = parseFloat(val);
+      if (val.endsWith("rem")) px = parseFloat(val) * 16;
+      if (px === null && /^\\d+(\\.\\d+)?$/.test(val)) px = parseFloat(val);
+      if (px === null) return null;
+      let best = fontSizeMap[0];
+      let bestDiff = Math.abs(px - best.px);
+      for (const item of fontSizeMap) {
+        const diff = Math.abs(px - item.px);
+        if (diff < bestDiff) {
+          best = item;
+          bestDiff = diff;
+        }
+      }
+      return best.tw;
+    }
+
+    function radiusClass(value) {
+      const v = value.trim().toLowerCase();
+      if (v === "9999px" || v.includes("50%") || v.includes("9999")) return "rounded-full";
+      const parsed = numberFromLength(v);
+      if (parsed.type !== "spacing") return `rounded-[${value}]`;
+      const px = parsed.units * 4;
+      if (px <= 0) return "rounded-none";
+      if (px <= 2) return "rounded-sm";
+      if (px <= 4) return "rounded";
+      if (px <= 6) return "rounded-md";
+      if (px <= 8) return "rounded-lg";
+      if (px <= 12) return "rounded-xl";
+      if (px <= 16) return "rounded-2xl";
+      if (px <= 24) return "rounded-3xl";
+      return `rounded-[${value}]`;
+    }
+
+    function borderWidthClass(value) {
+      const parsed = numberFromLength(value);
+      if (parsed.type !== "spacing") return `border-[${value}]`;
+      const px = parsed.units * 4;
+      if (px <= 0) return "border-0";
+      if (px <= 1) return "border";
+      if (px <= 2) return "border-2";
+      if (px <= 4) return "border-4";
+      if (px <= 8) return "border-8";
+      return `border-[${value}]`;
+    }
+
+    function boxShadowClass(value) {
+      const normalized = value.trim().toLowerCase();
+      const presets = {
+        "none": "shadow-none"
+      };
+      if (presets[normalized]) return presets[normalized];
+      if (normalized.includes("rgba(0, 0, 0, 0.05)") || normalized.includes("0 1px 2px")) return "shadow-sm";
+      if (normalized.includes("0 1px 3px") || normalized.includes("0 4px 6px")) return "shadow";
+      if (normalized.includes("0 10px 15px")) return "shadow-lg";
+      if (normalized.includes("0 20px 25px") || normalized.includes("0 25px 50px")) return "shadow-xl";
+      return `shadow-[${value.trim()}]`;
+    }
+
+    function widthHeight(prefix, value) {
+      const normalized = value.trim().toLowerCase();
+      if (fractionMap[normalized]) return [`${prefix}-${fractionMap[normalized]}`];
+      if (normalized === "auto") return [`${prefix}-auto`];
+      if (normalized === "fit-content") return [`${prefix}-fit`];
+      if (normalized === "max-content") return [`${prefix}-max`];
+      if (normalized === "min-content") return [`${prefix}-min`];
+      const parsed = numberFromLength(normalized);
+      if (parsed.type !== "spacing") return [`${prefix}-[${value.trim()}]`];
+      return [buildSpacing(prefix, normalized)];
+    }
+
+    function opacityClass(value) {
+      const normalized = value.trim();
+      let number = null;
+      if (normalized.endsWith("%")) number = parseFloat(normalized);
+      else if (/^\\d+(\\.\\d+)?$/.test(normalized)) {
+        const raw = parseFloat(normalized);
+        number = raw <= 1 ? raw * 100 : raw;
+      }
+      if (number === null) return `opacity-[${value}]`;
+      const rounded = Math.max(0, Math.min(100, Math.round(number / 5) * 5));
+      return `opacity-${rounded}`;
+    }
+
+    function zIndexClass(value) {
+      const normalized = value.trim();
+      if (["auto", "inherit", "initial"].includes(normalized)) return `z-[${normalized}]`;
+      if (/^-?\\d+$/.test(normalized)) {
+        const num = parseInt(normalized, 10);
+        const presets = new Set([0, 10, 20, 30, 40, 50]);
+        return presets.has(num) ? `z-${num}` : `z-[${normalized}]`;
+      }
+      return `z-[${normalized}]`;
+    }
+
+    function letterSpacingClass(value) {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "normal") return "tracking-normal";
+      if (normalized.endsWith("em")) {
+        const em = parseFloat(normalized);
+        let best = letterSpacingMap[0];
+        let bestDiff = Math.abs(em - best.em);
+        for (const item of letterSpacingMap) {
+          const diff = Math.abs(em - item.em);
+          if (diff < bestDiff) {
+            best = item;
+            bestDiff = diff;
+          }
+        }
+        return best.tw;
+      }
+      return `tracking-[${value}]`;
+    }
+
+    function lineHeightClass(value) {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "normal") return "leading-normal";
+      if (normalized === "1") return "leading-none";
+      if (normalized === "1.25") return "leading-tight";
+      if (normalized === "1.375") return "leading-snug";
+      if (normalized === "1.5") return "leading-relaxed";
+      if (normalized === "2") return "leading-loose";
+      if (normalized.endsWith("px") || normalized.endsWith("rem")) return `leading-[${normalized}]`;
+      if (/^\\d+(\\.\\d+)?$/.test(normalized)) return `leading-[${normalized}]`;
+      return `leading-[${value}]`;
+    }
+
+    function borderClass(value) {
+      const parts = value.split(/\\s+/).filter(Boolean);
+      const classes = [];
+      let widthPart = parts.find(p => p.includes("px"));
+      let colorPart = parts.find(p => /^#|rgb|hsl|[a-z]/i.test(p));
+      if (widthPart) classes.push(borderWidthClass(widthPart));
+      if (colorPart) classes.push(colorToClass("border", colorPart));
+      if (!widthPart && !colorPart && value.trim() === "none") classes.push("border-0");
+      return classes;
+    }
+
+    function parseBorderSide(prefix, value) {
+      const classes = borderClass(value);
+      return classes.map(c => c.replace(/^border/, prefix));
+    }
+
+    function translate(cssText) {
+      const declarations = parseDeclarations(cssText);
+      const classes = new Set();
+      const unsupported = [];
+
+      for (const { property, value } of declarations) {
+        const handler = propertyHandlers[property];
+        if (handler) {
+          const res = handler(value);
+          if (res && res.length) res.forEach(c => classes.add(c));
+          else unsupported.push(`${property}: ${value}`);
+          continue;
+        }
+        // border shorthand fallback
+        if (property === "border") {
+          const res = borderClass(value);
+          if (res.length) res.forEach(c => classes.add(c));
+          else unsupported.push(`${property}: ${value}`);
+          continue;
+        }
+        unsupported.push(`${property}: ${value}`);
+      }
+
+      return { classes: Array.from(classes), unsupported };
+    }
+
+    const propertyHandlers = {
+      "margin": value => handleBoxSpacing("m", value),
+      "margin-top": value => [buildSpacing("mt", value)],
+      "margin-right": value => [buildSpacing("mr", value)],
+      "margin-bottom": value => [buildSpacing("mb", value)],
+      "margin-left": value => [buildSpacing("ml", value)],
+      "padding": value => handleBoxSpacing("p", value),
+      "padding-top": value => [buildSpacing("pt", value)],
+      "padding-right": value => [buildSpacing("pr", value)],
+      "padding-bottom": value => [buildSpacing("pb", value)],
+      "padding-left": value => [buildSpacing("pl", value)],
+      "gap": value => handleGap(value),
+      "row-gap": value => handleGap(value, "y"),
+      "column-gap": value => handleGap(value, "x"),
+      "width": value => widthHeight("w", value),
+      "min-width": value => widthHeight("min-w", value),
+      "max-width": value => widthHeight("max-w", value),
+      "height": value => widthHeight("h", value),
+      "min-height": value => widthHeight("min-h", value),
+      "max-height": value => widthHeight("max-h", value),
+      "background": value => [colorToClass("bg", value)],
+      "background-color": value => [colorToClass("bg", value)],
+      "color": value => [colorToClass("text", value)],
+      "font-size": value => {
+        const match = pickFontSize(value);
+        return [match || `text-[${value.trim()}]`];
+      },
+      "font-weight": value => [weightMap[value.trim()] || weightMap[value.trim().replace(/\\D/g, "")] || `font-[${value.trim()}]`],
+      "font-family": value => [`font-[${value.trim()}]`],
+      "line-height": value => [lineHeightClass(value)],
+      "letter-spacing": value => [letterSpacingClass(value)],
+      "text-transform": value => [textTransformMap[value.trim().toLowerCase()] || `normal-case`],
+      "text-align": value => [textAlignMap[value.trim().toLowerCase()] || `text-[${value.trim()}]`],
+      "display": value => [displayMap[value.trim().toLowerCase()] || `hidden`],
+      "flex-direction": value => [flexDirectionMap[value.trim().toLowerCase()] || `flex-row`],
+      "justify-content": value => [justifyMap[value.trim().toLowerCase()] || `justify-[${value.trim()}]`],
+      "align-items": value => [alignItemsMap[value.trim().toLowerCase()] || `items-[${value.trim()}]`],
+      "align-content": value => [alignContentMap[value.trim().toLowerCase()] || `content-[${value.trim()}]`],
+      "align-self": value => {
+        const key = value.trim().toLowerCase();
+        if (alignItemsMap[key]) return alignItemsMap[key].replace("items", "self");
+        return `self-[${value.trim()}]`;
+      },
+      "flex-wrap": value => [value.trim() === "nowrap" ? "flex-nowrap" : value.trim() === "wrap-reverse" ? "flex-wrap-reverse" : "flex-wrap"],
+      "order": value => [/^-?\\d+$/.test(value.trim()) ? `order-${value.trim()}` : `order-[${value.trim()}]`],
+      "background-size": value => [value.trim() === "cover" ? "bg-cover" : value.trim() === "contain" ? "bg-contain" : `bg-[${value.trim()}]`],
+      "background-position": value => [`bg-[${value.trim()}]`],
+      "background-repeat": value => {
+        const key = value.trim().toLowerCase();
+        if (key === "no-repeat") return ["bg-no-repeat"];
+        if (key === "repeat") return ["bg-repeat"];
+        if (key === "repeat-x") return ["bg-repeat-x"];
+        if (key === "repeat-y") return ["bg-repeat-y"];
+        return [`bg-[${value.trim()}]`];
+      },
+      "border-radius": value => [radiusClass(value)],
+      "border": value => borderClass(value),
+      "border-color": value => [colorToClass("border", value)],
+      "border-top-color": value => [colorToClass("border-t", value)],
+      "border-right-color": value => [colorToClass("border-r", value)],
+      "border-bottom-color": value => [colorToClass("border-b", value)],
+      "border-left-color": value => [colorToClass("border-l", value)],
+      "border-width": value => [borderWidthClass(value)],
+      "border-top-width": value => [borderWidthClass(value).replace("border", "border-t")],
+      "border-right-width": value => [borderWidthClass(value).replace("border", "border-r")],
+      "border-bottom-width": value => [borderWidthClass(value).replace("border", "border-b")],
+      "border-left-width": value => [borderWidthClass(value).replace("border", "border-l")],
+      "border-top": value => parseBorderSide("border-t", value),
+      "border-right": value => parseBorderSide("border-r", value),
+      "border-bottom": value => parseBorderSide("border-b", value),
+      "border-left": value => parseBorderSide("border-l", value),
+      "border-style": value => [value.trim() === "none" ? "border-0" : "border"],
+      "box-shadow": value => [boxShadowClass(value)],
+      "opacity": value => [opacityClass(value)],
+      "z-index": value => [zIndexClass(value)],
+      "position": value => [positionMap[value.trim().toLowerCase()] || `relative`],
+      "top": value => [buildSpacing("top", value)],
+      "right": value => [buildSpacing("right", value)],
+      "bottom": value => [buildSpacing("bottom", value)],
+      "left": value => [buildSpacing("left", value)],
+      "overflow": value => [overflowMap[value.trim().toLowerCase()] || `overflow-[${value.trim()}]`],
+      "overflow-x": value => {
+        const key = value.trim().toLowerCase();
+        return [overflowMap[key] ? overflowMap[key].replace("overflow-", "overflow-x-") : `overflow-x-[${value.trim()}]`];
+      },
+      "overflow-y": value => {
+        const key = value.trim().toLowerCase();
+        return [overflowMap[key] ? overflowMap[key].replace("overflow-", "overflow-y-") : `overflow-y-[${value.trim()}]`];
+      },
+      "object-fit": value => [`object-${value.trim().toLowerCase()}`],
+      "object-position": value => [`object-[${value.trim()}]`],
+      "text-decoration": value => [value.trim() === "underline" ? "underline" : value.trim() === "line-through" ? "line-through" : "no-underline"],
+      "white-space": value => [value.trim() === "nowrap" ? "whitespace-nowrap" : value.trim() === "pre" ? "whitespace-pre" : value.trim() === "pre-wrap" ? "whitespace-pre-wrap" : `whitespace-normal`],
+      "cursor": value => [`cursor-${value.trim()}`],
+      "list-style": value => [value.trim() === "none" ? "list-none" : value.trim() === "disc" ? "list-disc" : value.trim() === "decimal" ? "list-decimal" : `list-[${value.trim()}]`]
+    };
+
+    const cssInput = document.getElementById("cssInput");
+    const tailwindOutput = document.getElementById("tailwindOutput");
+    const convertBtn = document.getElementById("convertBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusText = document.getElementById("statusText");
+    const unsupportedBox = document.getElementById("unsupportedBox");
+    const unsupportedList = document.getElementById("unsupportedList");
+    const classCount = document.getElementById("classCount");
+    const unsupportedCount = document.getElementById("unsupportedCount");
+
+    function render(result) {
+      const classString = result.classes.join(" ");
+      tailwindOutput.value = classString;
+      classCount.textContent = result.classes.length;
+      unsupportedCount.childNodes[0].textContent = `${result.unsupported.length} `;
+      unsupportedList.innerHTML = "";
+      if (result.unsupported.length) {
+        unsupportedBox.classList.add("visible");
+        for (const item of result.unsupported) {
+          const li = document.createElement("li");
+          li.textContent = item;
+          unsupportedList.appendChild(li);
+        }
+        statusText.textContent = "Bitte prüfe die rot markierten Deklarationen.";
+      } else {
+        unsupportedBox.classList.remove("visible");
+        statusText.textContent = "Alles sauber übersetzt.";
+      }
+    }
+
+    function performTranslate() {
+      const result = translate(cssInput.value);
+      render(result);
+    }
+
+    let debounceTimer;
+    cssInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(performTranslate, 180);
+    });
+
+    convertBtn.addEventListener("click", performTranslate);
+
+    copyBtn.addEventListener("click", async () => {
+      if (!tailwindOutput.value.trim()) return;
+      try {
+        await navigator.clipboard.writeText(tailwindOutput.value.trim());
+        statusText.textContent = "Tailwind Klassen kopiert ✅";
+      } catch (e) {
+        statusText.textContent = "Clipboard nicht verfügbar, bitte manuell kopieren.";
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      cssInput.value = "";
+      tailwindOutput.value = "";
+      unsupportedBox.classList.remove("visible");
+      classCount.textContent = "0";
+      unsupportedCount.childNodes[0].textContent = "0 ";
+      statusText.textContent = "Bereit.";
+    });
+
+    // Initial sample translation
+    performTranslate();
+  </script>
+</body>
+</html>

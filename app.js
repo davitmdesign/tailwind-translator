@@ -304,6 +304,14 @@
       return `[${prop}:${value.trim().replace(/\s+/g, "_")}]`;
     }
 
+    function visibilityClass(value) {
+      const key = value.trim().toLowerCase();
+      if (key === "visible") return "visible";
+      if (key === "hidden") return "invisible";
+      if (key === "collapse") return "collapse";
+      return `visible-[${value.trim()}]`;
+    }
+
     function selectorVariant(selector) {
       const main = selector.split(",")[0].trim();
       if (!main) return null;
@@ -593,6 +601,7 @@
       "text-transform": value => [textTransformMap[value.trim().toLowerCase()] || `normal-case`],
       "text-align": value => [textAlignMap[value.trim().toLowerCase()] || `text-[${value.trim()}]`],
       "display": value => [displayMap[value.trim().toLowerCase()] || `hidden`],
+      "visibility": value => [visibilityClass(value)],
       "flex-direction": value => [flexDirectionMap[value.trim().toLowerCase()] || `flex-row`],
       "justify-content": value => [justifyMap[value.trim().toLowerCase()] || `justify-[${value.trim()}]`],
       "align-items": value => [alignItemsMap[value.trim().toLowerCase()] || `items-[${value.trim()}]`],
@@ -637,6 +646,9 @@
       "border-image-width": value => [arbitraryProperty("border-image-width", value)],
       "border-image-outset": value => [arbitraryProperty("border-image-outset", value)],
       "border-image-repeat": value => [arbitraryProperty("border-image-repeat", value)],
+      "transition": value => [arbitraryProperty("transition", value)],
+      "scrollbar-color": value => [arbitraryProperty("scrollbar-color", value)],
+      "scrollbar-width": value => [arbitraryProperty("scrollbar-width", value)],
       "box-shadow": value => [boxShadowClass(value)],
       "opacity": value => [opacityClass(value)],
       "z-index": value => [zIndexClass(value)],

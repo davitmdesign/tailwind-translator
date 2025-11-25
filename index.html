@@ -898,7 +898,7 @@
       const declarations = parseDeclarations(selectorResult.cleaned);
       const classes = new Set();
       const unsupported = [];
-      const pendingMedia = [];
+      const mediaMeta = [];
 
       for (const { property, value } of declarations) {
         if (property.startsWith("--")) continue;
@@ -939,10 +939,8 @@
       for (const block of media) {
         const override = mediaOverride[block.query];
         const bp = override || breakpointFromQuery(block.query);
-        if (!bp) {
-          pendingMedia.push(block.query);
-          continue;
-        }
+        mediaMeta.push({ query: block.query, resolved: bp || null });
+        if (!bp) continue;
         const mediaDeclarations = parseDeclarations(block.content);
         for (const { property, value } of mediaDeclarations) {
           if (property.startsWith("--")) continue;
@@ -957,7 +955,7 @@
         }
       }
 
-      return { classes: Array.from(classes), unsupported, pendingMedia };
+      return { classes: Array.from(classes), unsupported, mediaMeta };
     }
 
     const propertyHandlers = {
@@ -1075,8 +1073,8 @@
     const classString = result.classes.join(" ");
     tailwindOutput.value = classString;
     classCount.textContent = result.classes.length;
-      unsupportedCount.childNodes[0].textContent = `${result.unsupported.length} `;
-      unsupportedList.innerHTML = "";
+    unsupportedCount.childNodes[0].textContent = `${result.unsupported.length} `;
+    unsupportedList.innerHTML = "";
       if (result.unsupported.length) {
         unsupportedBox.classList.add("visible");
         for (const item of result.unsupported) {
@@ -1090,8 +1088,8 @@
         statusText.textContent = "Alles sauber übersetzt.";
       }
 
-      renderMediaPrompt(result.pendingMedia);
-    }
+    renderMediaPanel(result.mediaMeta);
+  }
 
   function performTranslate() {
     const result = translate(cssInput.value);
@@ -1145,8 +1143,8 @@
     // Initial sample translation
     performTranslate();
 
-    function renderMediaPrompt(pending) {
-      if (!pending.length) {
+    function renderMediaPanel(mediaMeta) {
+      if (!mediaMeta.length) {
         mediaPanel.classList.remove("visible");
         mediaList.innerHTML = "";
         return;
@@ -1154,36 +1152,49 @@
       mediaPanel.classList.add("visible");
       mediaList.innerHTML = "";
       const options = [
+        { label: "auto (Detection)", value: "auto" },
         { label: "sm (≥640px)", value: "sm" },
         { label: "md (≥768px)", value: "md" },
         { label: "lg (≥1024px)", value: "lg" },
         { label: "xl (≥1280px)", value: "xl" },
         { label: "2xl (≥1536px)", value: "2xl" }
       ];
-      pending.forEach(query => {
+      const seen = new Set();
+      mediaMeta.forEach(({ query, resolved }) => {
+        if (seen.has(query)) return;
+        seen.add(query);
         const item = document.createElement("div");
         item.className = "media-item";
         const title = document.createElement("div");
         title.innerHTML = `@media (<code>${query}</code>)`;
         const select = document.createElement("select");
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Breakpoint auswählen…";
-        select.appendChild(placeholder);
         options.forEach(opt => {
           const o = document.createElement("option");
           o.value = opt.value;
           o.textContent = opt.label;
-          if (mediaOverride[query] === opt.value) o.selected = true;
+          const override = mediaOverride[query];
+          if (override === opt.value) o.selected = true;
+          else if (!override && opt.value === "auto") o.selected = true;
+          else if (!override && !resolved && opt.value === "auto") o.selected = true;
           select.appendChild(o);
         });
+        if (!mediaOverride[query] && resolved) {
+          select.value = resolved;
+        }
         select.addEventListener("change", () => {
-          if (select.value) mediaOverride[query] = select.value;
-          else delete mediaOverride[query];
+          if (select.value === "auto") {
+            delete mediaOverride[query];
+          } else if (select.value) {
+            mediaOverride[query] = select.value;
+          }
           performTranslate();
         });
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = resolved ? `Auto erkannt: ${resolved}` : "Nicht erkannt – bitte wählen";
         item.appendChild(title);
         item.appendChild(select);
+        item.appendChild(hint);
         mediaList.appendChild(item);
       });
     }

@@ -300,6 +300,10 @@
       return value.trim().replace(/\s+/g, "_");
     }
 
+    function arbitraryProperty(prop, value) {
+      return `[${prop}:${value.trim().replace(/\s+/g, "_")}]`;
+    }
+
     function selectorVariant(selector) {
       const main = selector.split(",")[0].trim();
       if (!main) return null;
@@ -627,6 +631,12 @@
       "border-bottom": value => parseBorderSide("border-b", value),
       "border-left": value => parseBorderSide("border-l", value),
       "border-style": value => [value.trim() === "none" ? "border-0" : "border"],
+      "border-image": value => [arbitraryProperty("border-image", value)],
+      "border-image-source": value => [arbitraryProperty("border-image-source", value)],
+      "border-image-slice": value => [arbitraryProperty("border-image-slice", value)],
+      "border-image-width": value => [arbitraryProperty("border-image-width", value)],
+      "border-image-outset": value => [arbitraryProperty("border-image-outset", value)],
+      "border-image-repeat": value => [arbitraryProperty("border-image-repeat", value)],
       "box-shadow": value => [boxShadowClass(value)],
       "opacity": value => [opacityClass(value)],
       "z-index": value => [zIndexClass(value)],

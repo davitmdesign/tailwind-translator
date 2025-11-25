@@ -1104,6 +1104,20 @@
       debounceTimer = setTimeout(performTranslate, 180);
     });
 
+    cssInput.addEventListener("paste", event => {
+      event.preventDefault();
+      const paste = (event.clipboardData || window.clipboardData).getData("text");
+      const cleaned = paste.replace(/\t+/g, "  ");
+      const start = cssInput.selectionStart;
+      const end = cssInput.selectionEnd;
+      const before = cssInput.value.slice(0, start);
+      const after = cssInput.value.slice(end);
+      cssInput.value = before + cleaned + after;
+      const cursor = start + cleaned.length;
+      cssInput.selectionStart = cssInput.selectionEnd = cursor;
+      performTranslate();
+    });
+
     convertBtn.addEventListener("click", performTranslate);
 
     copyBtn.addEventListener("click", async () => {

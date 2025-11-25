@@ -721,7 +721,10 @@
 
     function breakpointFromQuery(query) {
       const normalized = query.toLowerCase().replace(/\\s+/g, " ");
-      const match = normalized.match(/(?:min-width\\s*:\\s*|width\\s*[>=]+\\s*)([\\d.]+)(px|rem)/i);
+      const match =
+        normalized.match(/min-width\\s*:\\s*([\\d.]+)(px|rem)/i) ||
+        normalized.match(/width\\s*[>=]+\\s*([\\d.]+)(px|rem)/i) ||
+        normalized.match(/([\\d.]+)(px|rem)\\s*<=\\s*width/i);
       if (!match) return null;
       const value = parseFloat(match[1]);
       const unit = match[2];

@@ -539,6 +539,20 @@
       return { cleaned, media };
     }
 
+    function parseSelectorBlocks(input) {
+      const blocks = [];
+      const regex = /([^{@}]+)\{([\s\S]*?)\}/g;
+      let cleaned = input;
+      let match;
+      while ((match = regex.exec(input)) !== null) {
+        const selector = match[1].trim();
+        if (!selector) continue;
+        blocks.push({ selector, content: match[2] });
+        cleaned = cleaned.replace(match[0], "");
+      }
+      return { cleaned, blocks };
+    }
+
     function numberFromLength(raw) {
       const value = raw.trim();
       const negative = value.startsWith("-");
@@ -628,6 +642,15 @@
 
     function arbitraryValue(value) {
       return value.trim().replace(/\s+/g, "_");
+    }
+
+    function selectorVariant(selector) {
+      const main = selector.split(",")[0].trim();
+      if (!main) return null;
+      const normalized = main.replace(/\s+/g, " ");
+      const replaced = normalized.replace(/^[^>+~\s]+/, "&");
+      const compact = replaced.replace(/\s+/g, "");
+      return `[${compact}]`;
     }
 
     function pickFontSize(value) {
@@ -800,7 +823,8 @@
 
     function translate(cssText) {
       const { cleaned, media } = extractMediaBlocks(cssText);
-      const declarations = parseDeclarations(cleaned);
+      const selectorResult = parseSelectorBlocks(cleaned);
+      const declarations = parseDeclarations(selectorResult.cleaned);
       const classes = new Set();
       const unsupported = [];
 
@@ -814,6 +838,26 @@
           continue;
         }
         unsupported.push(`${property}: ${value}`);
+      }
+
+      for (const block of selectorResult.blocks) {
+        const variant = selectorVariant(block.selector);
+        if (!variant) {
+          unsupported.push(block.selector);
+          continue;
+        }
+        const blockDecl = parseDeclarations(block.content);
+        for (const { property, value } of blockDecl) {
+          if (property.startsWith("--")) continue;
+          const handler = propertyHandlers[property];
+          if (handler) {
+            const res = handler(value);
+            if (res && res.length) res.forEach(c => classes.add(`${variant}:${c}`));
+            else unsupported.push(`${variant} ${property}: ${value}`);
+          } else {
+            unsupported.push(`${variant} ${property}: ${value}`);
+          }
+        }
       }
 
       for (const block of media) {

@@ -505,6 +505,18 @@
       return declarations;
     }
 
+    function extractMediaBlocks(input) {
+      const media = [];
+      const regex = /@media\s*\(([^)]+)\)\s*\{([\s\S]*?)\}/g;
+      let cleaned = input;
+      let match;
+      while ((match = regex.exec(input)) !== null) {
+        media.push({ query: match[1].trim(), content: match[2] });
+        cleaned = cleaned.replace(match[0], "");
+      }
+      return { cleaned, media };
+    }
+
     function numberFromLength(raw) {
       const value = raw.trim();
       const negative = value.startsWith("-");
@@ -689,6 +701,26 @@
       return `z-[${normalized}]`;
     }
 
+    function breakpointFromQuery(query) {
+      const normalized = query.toLowerCase().replace(/\\s+/g, " ");
+      const match = normalized.match(/(?:min-width\\s*:\\s*|width\\s*[>=]+\\s*)([\\d.]+)(px|rem)/i);
+      if (!match) return null;
+      const value = parseFloat(match[1]);
+      const unit = match[2];
+      const px = unit === "rem" ? value * 16 : value;
+      const points = [
+        { px: 640, bp: "sm" },
+        { px: 768, bp: "md" },
+        { px: 1024, bp: "lg" },
+        { px: 1280, bp: "xl" },
+        { px: 1536, bp: "2xl" }
+      ];
+      for (const point of points) {
+        if (px <= point.px + 1e-6) return point.bp;
+      }
+      return null;
+    }
+
     function letterSpacingClass(value) {
       const normalized = value.trim().toLowerCase();
       if (normalized === "normal") return "tracking-normal";
@@ -738,7 +770,8 @@
     }
 
     function translate(cssText) {
-      const declarations = parseDeclarations(cssText);
+      const { cleaned, media } = extractMediaBlocks(cssText);
+      const declarations = parseDeclarations(cleaned);
       const classes = new Set();
       const unsupported = [];
 
@@ -750,14 +783,26 @@
           else unsupported.push(`${property}: ${value}`);
           continue;
         }
-        // border shorthand fallback
-        if (property === "border") {
-          const res = borderClass(value);
-          if (res.length) res.forEach(c => classes.add(c));
-          else unsupported.push(`${property}: ${value}`);
+        unsupported.push(`${property}: ${value}`);
+      }
+
+      for (const block of media) {
+        const bp = breakpointFromQuery(block.query);
+        if (!bp) {
+          unsupported.push(`@media (${block.query})`);
           continue;
         }
-        unsupported.push(`${property}: ${value}`);
+        const mediaDeclarations = parseDeclarations(block.content);
+        for (const { property, value } of mediaDeclarations) {
+          const handler = propertyHandlers[property];
+          if (handler) {
+            const res = handler(value);
+            if (res && res.length) res.forEach(c => classes.add(`${bp}:${c}`));
+            else unsupported.push(`@${bp} ${property}: ${value}`);
+          } else {
+            unsupported.push(`@${bp} ${property}: ${value}`);
+          }
+        }
       }
 
       return { classes: Array.from(classes), unsupported };

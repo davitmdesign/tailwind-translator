@@ -542,7 +542,7 @@
       if (normalized === "0" || normalized === "0px") return { type: "spacing", units: 0, negative };
       if (normalized.endsWith("px")) return { type: "spacing", units: parseFloat(normalized) / 4, negative };
       if (normalized.endsWith("rem")) return { type: "spacing", units: parseFloat(normalized) * 4, negative };
-      if (/^\\d+(\\.\\d+)?$/.test(normalized)) return { type: "spacing", units: parseFloat(normalized), negative };
+      if (/^\d+(\.\d+)?$/.test(normalized)) return { type: "spacing", units: parseFloat(normalized), negative };
       return { type: "raw", raw: value, negative };
     }
 
@@ -565,11 +565,11 @@
       const parsed = numberFromLength(raw);
       if (parsed.type !== "spacing") return `${parsed.negative ? "-" : ""}${prefix}-[${raw.trim()}]`;
       const unit = closestSpacingUnit(parsed.units);
-      return `${parsed.negative ? "-" : ""}${prefix}-${unit % 1 === 0 ? unit : unit.toString().replace(/\\.0$/, "")}`;
+      return `${parsed.negative ? "-" : ""}${prefix}-${unit % 1 === 0 ? unit : unit.toString().replace(/\.0$/, "")}`;
     }
 
     function handleBoxSpacing(prefix, value) {
-      const tokens = value.split(/\\s+/).filter(Boolean);
+      const tokens = value.split(/\s+/).filter(Boolean);
       if (tokens.length === 1) {
         if (tokens[0].toLowerCase() === "auto") return [`${prefix}-auto`];
         return [buildSpacing(prefix, tokens[0])];
@@ -627,7 +627,7 @@
       let px = null;
       if (val.endsWith("px")) px = parseFloat(val);
       if (val.endsWith("rem")) px = parseFloat(val) * 16;
-      if (px === null && /^\\d+(\\.\\d+)?$/.test(val)) px = parseFloat(val);
+      if (px === null && /^\d+(\.\d+)?$/.test(val)) px = parseFloat(val);
       if (px === null) return null;
       let best = fontSizeMap[0];
       let bestDiff = Math.abs(px - best.px);
@@ -699,7 +699,7 @@
       const normalized = value.trim();
       let number = null;
       if (normalized.endsWith("%")) number = parseFloat(normalized);
-      else if (/^\\d+(\\.\\d+)?$/.test(normalized)) {
+      else if (/^\d+(\.\d+)?$/.test(normalized)) {
         const raw = parseFloat(normalized);
         number = raw <= 1 ? raw * 100 : raw;
       }
@@ -711,7 +711,7 @@
     function zIndexClass(value) {
       const normalized = value.trim();
       if (["auto", "inherit", "initial"].includes(normalized)) return `z-[${normalized}]`;
-      if (/^-?\\d+$/.test(normalized)) {
+      if (/^-?\d+$/.test(normalized)) {
         const num = parseInt(normalized, 10);
         const presets = new Set([0, 10, 20, 30, 40, 50]);
         return presets.has(num) ? `z-${num}` : `z-[${normalized}]`;
@@ -720,11 +720,11 @@
     }
 
     function breakpointFromQuery(query) {
-      const normalized = query.toLowerCase().replace(/\\s+/g, " ");
+      const normalized = query.toLowerCase().replace(/\s+/g, " ");
       const match =
-        normalized.match(/min-width\\s*:\\s*([\\d.]+)(px|rem)/i) ||
-        normalized.match(/width\\s*[>=]+\\s*([\\d.]+)(px|rem)/i) ||
-        normalized.match(/([\\d.]+)(px|rem)\\s*<=\\s*width/i);
+        normalized.match(/min-width\s*:\s*([\d.]+)(px|rem)/i) ||
+        normalized.match(/width\s*[>=]+\s*([\d.]+)(px|rem)/i) ||
+        normalized.match(/([\d.]+)(px|rem)\s*<=\s*width/i);
       if (!match) return null;
       const value = parseFloat(match[1]);
       const unit = match[2];
@@ -770,12 +770,12 @@
       if (normalized === "1.5") return "leading-relaxed";
       if (normalized === "2") return "leading-loose";
       if (normalized.endsWith("px") || normalized.endsWith("rem")) return `leading-[${normalized}]`;
-      if (/^\\d+(\\.\\d+)?$/.test(normalized)) return `leading-[${normalized}]`;
+      if (/^\d+(\.\d+)?$/.test(normalized)) return `leading-[${normalized}]`;
       return `leading-[${value}]`;
     }
 
     function borderClass(value) {
-      const parts = value.split(/\\s+/).filter(Boolean);
+      const parts = value.split(/\s+/).filter(Boolean);
       const classes = [];
       let widthPart = parts.find(p => p.includes("px"));
       let colorPart = parts.find(p => /^#|rgb|hsl|[a-z]/i.test(p));
@@ -875,7 +875,7 @@
         return `self-[${value.trim()}]`;
       },
       "flex-wrap": value => [value.trim() === "nowrap" ? "flex-nowrap" : value.trim() === "wrap-reverse" ? "flex-wrap-reverse" : "flex-wrap"],
-      "order": value => [/^-?\\d+$/.test(value.trim()) ? `order-${value.trim()}` : `order-[${value.trim()}]`],
+      "order": value => [/^-?\d+$/.test(value.trim()) ? `order-${value.trim()}` : `order-[${value.trim()}]`],
       "background-size": value => [value.trim() === "cover" ? "bg-cover" : value.trim() === "contain" ? "bg-contain" : `bg-[${value.trim()}]`],
       "background-position": value => [`bg-[${value.trim()}]`],
       "background-repeat": value => {

@@ -304,6 +304,12 @@
       return `[${prop}:${value.trim().replace(/\s+/g, "_")}]`;
     }
 
+    function transformClass(value) {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "none") return "transform-none";
+      return `transform-[${value.trim().replace(/\s+/g, "_")}]`;
+    }
+
     function visibilityClass(value) {
       const key = value.trim().toLowerCase();
       if (key === "visible") return "visible";
@@ -685,7 +691,10 @@
       "text-decoration": value => [value.trim() === "underline" ? "underline" : value.trim() === "line-through" ? "line-through" : "no-underline"],
       "white-space": value => [value.trim() === "nowrap" ? "whitespace-nowrap" : value.trim() === "pre" ? "whitespace-pre" : value.trim() === "pre-wrap" ? "whitespace-pre-wrap" : `whitespace-normal`],
       "cursor": value => [`cursor-${value.trim()}`],
-      "list-style": value => [value.trim() === "none" ? "list-none" : value.trim() === "disc" ? "list-disc" : value.trim() === "decimal" ? "list-decimal" : `list-[${value.trim()}]`]
+      "list-style": value => [value.trim() === "none" ? "list-none" : value.trim() === "disc" ? "list-disc" : value.trim() === "decimal" ? "list-decimal" : `list-[${value.trim()}]`],
+      "transform": value => [transformClass(value)],
+      "transform-origin": value => [`origin-[${value.trim().replace(/\s+/g, "_")}]`],
+      "content": value => [`content-[${value.trim().replace(/\s+/g, "_")}]`]
     };
 
     const cssInput = document.getElementById("cssInput");

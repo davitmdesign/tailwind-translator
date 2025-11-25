@@ -1,0 +1,797 @@
+    const spacingScale = [
+      0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20,
+      24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96
+    ];
+
+    const fractionMap = {
+      "100%": "full",
+      "50%": "1/2",
+      "33.333%": "1/3",
+      "33.33%": "1/3",
+      "66.667%": "2/3",
+      "66.66%": "2/3",
+      "25%": "1/4",
+      "75%": "3/4",
+      "20%": "1/5",
+      "40%": "2/5",
+      "60%": "3/5",
+      "80%": "4/5",
+      "16.666%": "1/6",
+      "16.667%": "1/6",
+      "83.333%": "5/6",
+      "83.334%": "5/6"
+    };
+
+    const fontSizeMap = [
+      { px: 12, tw: "text-xs" },
+      { px: 14, tw: "text-sm" },
+      { px: 16, tw: "text-base" },
+      { px: 18, tw: "text-lg" },
+      { px: 20, tw: "text-xl" },
+      { px: 24, tw: "text-2xl" },
+      { px: 30, tw: "text-3xl" },
+      { px: 36, tw: "text-4xl" },
+      { px: 48, tw: "text-5xl" },
+      { px: 60, tw: "text-6xl" },
+      { px: 72, tw: "text-7xl" },
+      { px: 96, tw: "text-8xl" },
+      { px: 128, tw: "text-9xl" }
+    ];
+
+    const weightMap = {
+      "100": "font-thin",
+      "200": "font-extralight",
+      "300": "font-light",
+      "400": "font-normal",
+      "500": "font-medium",
+      "600": "font-semibold",
+      "700": "font-bold",
+      "800": "font-extrabold",
+      "900": "font-black",
+      "normal": "font-normal",
+      "bold": "font-bold",
+      "bolder": "font-semibold",
+      "lighter": "font-light"
+    };
+
+    const displayMap = {
+      "block": "block",
+      "inline": "inline",
+      "inline-block": "inline-block",
+      "flex": "flex",
+      "inline-flex": "inline-flex",
+      "grid": "grid",
+      "inline-grid": "inline-grid",
+      "none": "hidden"
+    };
+
+    const flexDirectionMap = {
+      "row": "flex-row",
+      "row-reverse": "flex-row-reverse",
+      "column": "flex-col",
+      "column-reverse": "flex-col-reverse"
+    };
+
+    const justifyMap = {
+      "flex-start": "justify-start",
+      "start": "justify-start",
+      "center": "justify-center",
+      "flex-end": "justify-end",
+      "end": "justify-end",
+      "space-between": "justify-between",
+      "space-around": "justify-around",
+      "space-evenly": "justify-evenly"
+    };
+
+    const alignItemsMap = {
+      "flex-start": "items-start",
+      "start": "items-start",
+      "center": "items-center",
+      "flex-end": "items-end",
+      "end": "items-end",
+      "stretch": "items-stretch",
+      "baseline": "items-baseline"
+    };
+
+    const textAlignMap = {
+      "left": "text-left",
+      "center": "text-center",
+      "right": "text-right",
+      "justify": "text-justify"
+    };
+
+    const alignContentMap = {
+      "flex-start": "content-start",
+      "start": "content-start",
+      "center": "content-center",
+      "flex-end": "content-end",
+      "end": "content-end",
+      "space-between": "content-between",
+      "space-around": "content-around",
+      "stretch": "content-stretch"
+    };
+
+    const textTransformMap = {
+      "uppercase": "uppercase",
+      "lowercase": "lowercase",
+      "capitalize": "capitalize",
+      "none": "normal-case"
+    };
+
+    const letterSpacingMap = [
+      { em: -0.05, tw: "tracking-tighter" },
+      { em: -0.025, tw: "tracking-tight" },
+      { em: 0, tw: "tracking-normal" },
+      { em: 0.025, tw: "tracking-wide" },
+      { em: 0.05, tw: "tracking-wider" },
+      { em: 0.1, tw: "tracking-widest" }
+    ];
+
+    const positionMap = {
+      "static": "static",
+      "relative": "relative",
+      "absolute": "absolute",
+      "fixed": "fixed",
+      "sticky": "sticky"
+    };
+
+    const overflowMap = {
+      "visible": "overflow-visible",
+      "hidden": "overflow-hidden",
+      "scroll": "overflow-scroll",
+      "auto": "overflow-auto"
+    };
+
+    const namedColorMap = {
+      "#000": "black",
+      "#000000": "black",
+      "#fff": "white",
+      "#ffffff": "white",
+      "black": "black",
+      "white": "white",
+      "transparent": "transparent",
+      "currentcolor": "current",
+      "current-color": "current"
+    };
+
+    function parseDeclarations(input) {
+      const cleaned = input.replace(/\/\*[\s\S]*?\*\//g, "");
+      const regex = /([a-zA-Z-]+)\s*:\s*([^;{}]+)\s*[;}]?/g;
+      const declarations = [];
+      let match;
+      while ((match = regex.exec(cleaned)) !== null) {
+        declarations.push({ property: match[1].toLowerCase(), value: match[2].trim() });
+      }
+      return declarations;
+    }
+
+    function extractMediaBlocks(input) {
+      const media = [];
+      const regex = /@media\s*\(([^)]+)\)\s*\{/gi;
+      let match;
+      while ((match = regex.exec(input)) !== null) {
+        const query = match[1].trim();
+        let braceCount = 1;
+        let idx = regex.lastIndex;
+        while (idx < input.length && braceCount > 0) {
+          const char = input[idx];
+          if (char === "{") braceCount++;
+          if (char === "}") braceCount--;
+          idx++;
+        }
+        const end = idx;
+        const content = input.slice(regex.lastIndex, end - 1);
+        media.push({ query, content, start: match.index, end });
+      }
+
+      let cleaned = "";
+      let last = 0;
+      for (const block of media) {
+        cleaned += input.slice(last, block.start);
+        last = block.end;
+      }
+      cleaned += input.slice(last);
+
+      return { cleaned, media };
+    }
+
+    function parseSelectorBlocks(input) {
+      const blocks = [];
+      const regex = /([^{@}]+)\{([\s\S]*?)\}/g;
+      let cleaned = input;
+      let match;
+      while ((match = regex.exec(input)) !== null) {
+        const selector = match[1].trim();
+        if (!selector) continue;
+        blocks.push({ selector, content: match[2] });
+        cleaned = cleaned.replace(match[0], "");
+      }
+      return { cleaned, blocks };
+    }
+
+    function numberFromLength(raw) {
+      const value = raw.trim();
+      const negative = value.startsWith("-");
+      const normalized = negative ? value.slice(1) : value;
+      if (normalized === "0" || normalized === "0px") return { type: "spacing", units: 0, negative };
+      if (normalized.endsWith("px")) return { type: "spacing", units: parseFloat(normalized) / 4, negative };
+      if (normalized.endsWith("rem")) return { type: "spacing", units: parseFloat(normalized) * 4, negative };
+      if (/^\d+(\.\d+)?$/.test(normalized)) return { type: "spacing", units: parseFloat(normalized), negative };
+      return { type: "raw", raw: value, negative };
+    }
+
+    function closestSpacingUnit(units) {
+      let best = spacingScale[0];
+      let bestDiff = Math.abs(units - best);
+      for (const candidate of spacingScale) {
+        const diff = Math.abs(units - candidate);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = candidate;
+        }
+      }
+      return best;
+    }
+
+    function buildSpacing(prefix, raw) {
+      const val = raw.trim().toLowerCase();
+      if (val === "auto") return `${prefix}-auto`;
+      const parsed = numberFromLength(raw);
+      if (parsed.type !== "spacing") return `${parsed.negative ? "-" : ""}${prefix}-[${raw.trim()}]`;
+      const unit = closestSpacingUnit(parsed.units);
+      return `${parsed.negative ? "-" : ""}${prefix}-${unit % 1 === 0 ? unit : unit.toString().replace(/\.0$/, "")}`;
+    }
+
+    function handleBoxSpacing(prefix, value) {
+      const tokens = value.split(/\s+/).filter(Boolean);
+      if (tokens.length === 1) {
+        if (tokens[0].toLowerCase() === "auto") return [`${prefix}-auto`];
+        return [buildSpacing(prefix, tokens[0])];
+      }
+      if (tokens.length === 2) {
+        const [y, x] = tokens;
+        const classes = [];
+        const xAuto = x.toLowerCase() === "auto";
+        const yAuto = y.toLowerCase() === "auto";
+        if (prefix === "m") {
+          if (xAuto && yAuto) return ["m-auto"];
+          if (xAuto) classes.push("mx-auto");
+          if (yAuto) classes.push("my-auto");
+        }
+        if (!yAuto) classes.push(buildSpacing(prefix + "y", y));
+        if (!xAuto) classes.push(buildSpacing(prefix + "x", x));
+        return classes;
+      }
+      if (tokens.length === 3) {
+        const [t, x, b] = tokens;
+        return [buildSpacing(prefix + "t", t), buildSpacing(prefix + "x", x), buildSpacing(prefix + "b", b)];
+      }
+      if (tokens.length >= 4) {
+        const [t, r, b, l] = tokens;
+        return [
+          buildSpacing(prefix + "t", t),
+          buildSpacing(prefix + "r", r),
+          buildSpacing(prefix + "b", b),
+          buildSpacing(prefix + "l", l)
+        ];
+      }
+      return [];
+    }
+
+    function handleGap(value, axis) {
+      const parts = value.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) return [buildSpacing(axis ? `gap-${axis}` : "gap", value)];
+      if (parts.length >= 2) {
+        const [rowGap, colGap] = parts;
+        return [buildSpacing("gap-y", rowGap), buildSpacing("gap-x", colGap)];
+      }
+      return [];
+    }
+
+    function colorToClass(prefix, value) {
+      const normalized = value.trim().toLowerCase();
+      if (namedColorMap[normalized]) return `${prefix}-${namedColorMap[normalized]}`;
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value.trim())) return `${prefix}-[${value.trim()}]`;
+      if (normalized.startsWith("rgb") || normalized.startsWith("hsl")) return `${prefix}-[${value.trim()}]`;
+      return `${prefix}-[${value.trim()}]`;
+    }
+
+    function arbitraryValue(value) {
+      return value.trim().replace(/\s+/g, "_");
+    }
+
+    function selectorVariant(selector) {
+      const main = selector.split(",")[0].trim();
+      if (!main) return null;
+      const normalized = main.replace(/\s+/g, " ");
+      const replaced = normalized.replace(/^[^>+~\s]+/, "&");
+      const compact = replaced.replace(/\s+/g, "");
+      if (compact === "&") return { base: true, variant: null };
+      return { base: false, variant: `[${compact}]` };
+    }
+
+    function pickFontSize(value) {
+      const val = value.trim().toLowerCase();
+      let px = null;
+      if (val.endsWith("px")) px = parseFloat(val);
+      if (val.endsWith("rem")) px = parseFloat(val) * 16;
+      if (px === null && /^\d+(\.\d+)?$/.test(val)) px = parseFloat(val);
+      if (px === null) return null;
+      let best = fontSizeMap[0];
+      let bestDiff = Math.abs(px - best.px);
+      for (const item of fontSizeMap) {
+        const diff = Math.abs(px - item.px);
+        if (diff < bestDiff) {
+          best = item;
+          bestDiff = diff;
+        }
+      }
+      return best.tw;
+    }
+
+    function radiusClass(value) {
+      const v = value.trim().toLowerCase();
+      if (v === "9999px" || v.includes("50%") || v.includes("9999")) return "rounded-full";
+      const parsed = numberFromLength(v);
+      if (parsed.type !== "spacing") return `rounded-[${value}]`;
+      const px = parsed.units * 4;
+      if (px <= 0) return "rounded-none";
+      if (px <= 2) return "rounded-sm";
+      if (px <= 4) return "rounded";
+      if (px <= 6) return "rounded-md";
+      if (px <= 8) return "rounded-lg";
+      if (px <= 12) return "rounded-xl";
+      if (px <= 16) return "rounded-2xl";
+      if (px <= 24) return "rounded-3xl";
+      return `rounded-[${value}]`;
+    }
+
+    function borderWidthClass(value) {
+      const parsed = numberFromLength(value);
+      if (parsed.type !== "spacing") return `border-[${value}]`;
+      const px = parsed.units * 4;
+      if (px <= 0) return "border-0";
+      if (px <= 1) return "border";
+      if (px <= 2) return "border-2";
+      if (px <= 4) return "border-4";
+      if (px <= 8) return "border-8";
+      return `border-[${value}]`;
+    }
+
+    function boxShadowClass(value) {
+      const normalized = value.trim().toLowerCase();
+      const presets = {
+        "none": "shadow-none"
+      };
+      if (presets[normalized]) return presets[normalized];
+      if (normalized.includes("rgba(0, 0, 0, 0.05)") || normalized.includes("0 1px 2px")) return "shadow-sm";
+      if (normalized.includes("0 1px 3px") || normalized.includes("0 4px 6px")) return "shadow";
+      if (normalized.includes("0 10px 15px")) return "shadow-lg";
+      if (normalized.includes("0 20px 25px") || normalized.includes("0 25px 50px")) return "shadow-xl";
+      return `shadow-[${arbitraryValue(value)}]`;
+    }
+
+    function widthHeight(prefix, value) {
+      const normalized = value.trim().toLowerCase();
+      if (fractionMap[normalized]) return [`${prefix}-${fractionMap[normalized]}`];
+      if (normalized === "auto") return [`${prefix}-auto`];
+      if (normalized === "fit-content") return [`${prefix}-fit`];
+      if (normalized === "max-content") return [`${prefix}-max`];
+      if (normalized === "min-content") return [`${prefix}-min`];
+      const parsed = numberFromLength(normalized);
+      if (parsed.type !== "spacing") return [`${prefix}-[${value.trim()}]`];
+      return [buildSpacing(prefix, normalized)];
+    }
+
+    function opacityClass(value) {
+      const normalized = value.trim();
+      let number = null;
+      if (normalized.endsWith("%")) number = parseFloat(normalized);
+      else if (/^\d+(\.\d+)?$/.test(normalized)) {
+        const raw = parseFloat(normalized);
+        number = raw <= 1 ? raw * 100 : raw;
+      }
+      if (number === null) return `opacity-[${value}]`;
+      const rounded = Math.max(0, Math.min(100, Math.round(number / 5) * 5));
+      return `opacity-${rounded}`;
+    }
+
+    function zIndexClass(value) {
+      const normalized = value.trim();
+      if (["auto", "inherit", "initial"].includes(normalized)) return `z-[${normalized}]`;
+      if (/^-?\d+$/.test(normalized)) {
+        const num = parseInt(normalized, 10);
+        const presets = new Set([0, 10, 20, 30, 40, 50]);
+        return presets.has(num) ? `z-${num}` : `z-[${normalized}]`;
+      }
+      return `z-[${normalized}]`;
+    }
+
+    function breakpointFromQuery(query) {
+      const normalized = query.toLowerCase().replace(/\s+/g, " ");
+      const match =
+        normalized.match(/min-width\s*:\s*([\d.]+)(px|rem)/i) ||
+        normalized.match(/width\s*[>=]+\s*([\d.]+)(px|rem)/i) ||
+        normalized.match(/([\d.]+)(px|rem)\s*<=\s*width/i);
+      if (!match) return null;
+      const value = parseFloat(match[1]);
+      const unit = match[2];
+      const px = unit === "rem" ? value * 16 : value;
+      const points = [
+        { px: 640, bp: "sm" },
+        { px: 768, bp: "md" },
+        { px: 1024, bp: "lg" },
+        { px: 1280, bp: "xl" },
+        { px: 1536, bp: "2xl" }
+      ];
+      for (const point of points) {
+        if (px <= point.px + 1e-6) return point.bp;
+      }
+      return null;
+    }
+
+    function letterSpacingClass(value) {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "normal") return "tracking-normal";
+      if (normalized.endsWith("em")) {
+        const em = parseFloat(normalized);
+        let best = letterSpacingMap[0];
+        let bestDiff = Math.abs(em - best.em);
+        for (const item of letterSpacingMap) {
+          const diff = Math.abs(em - item.em);
+          if (diff < bestDiff) {
+            best = item;
+            bestDiff = diff;
+          }
+        }
+        return best.tw;
+      }
+      return `tracking-[${value}]`;
+    }
+
+    function lineHeightClass(value) {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "normal") return "leading-normal";
+      if (normalized === "1") return "leading-none";
+      if (normalized === "1.25") return "leading-tight";
+      if (normalized === "1.375") return "leading-snug";
+      if (normalized === "1.5") return "leading-relaxed";
+      if (normalized === "2") return "leading-loose";
+      if (normalized.endsWith("px") || normalized.endsWith("rem")) return `leading-[${normalized}]`;
+      if (/^\d+(\.\d+)?$/.test(normalized)) return `leading-[${normalized}]`;
+      return `leading-[${value}]`;
+    }
+
+    function borderClass(value) {
+      const parts = value.split(/\s+/).filter(Boolean);
+      const classes = [];
+
+      const stylePart = parts.find(p => ["solid", "dashed", "dotted", "double"].includes(p.toLowerCase()));
+      const widthPart = parts.find(p => /^-?\d+(px)?$/i.test(p));
+      const colorPart = parts.find(p => {
+        if (p === widthPart || p === stylePart) return false;
+        return /^#|^rgb|^hsl|^var\(/i.test(p) || /^[a-z]+$/i.test(p);
+      });
+
+      if (widthPart) classes.push(borderWidthClass(widthPart));
+      if (stylePart) {
+        const map = { dashed: "border-dashed", dotted: "border-dotted", double: "border-double", solid: "border" };
+        classes.push(map[stylePart.toLowerCase()] || "border");
+      }
+      if (colorPart) classes.push(colorToClass("border", colorPart));
+      if (!widthPart && !colorPart && !stylePart && value.trim() === "none") classes.push("border-0");
+      if (!classes.length && value.trim()) classes.push(`border-[${value.trim()}]`);
+      return classes;
+    }
+
+    function parseBorderSide(prefix, value) {
+      const classes = borderClass(value);
+      return classes.map(c => c.replace(/^border/, prefix));
+    }
+
+    function translate(cssText) {
+      const { cleaned, media } = extractMediaBlocks(cssText);
+      const selectorResult = parseSelectorBlocks(cleaned);
+      const declarations = parseDeclarations(selectorResult.cleaned);
+      const classes = new Set();
+      const unsupported = [];
+      const mediaMeta = [];
+
+      for (const { property, value } of declarations) {
+        if (property.startsWith("--")) continue;
+        const handler = propertyHandlers[property];
+        if (handler) {
+          const res = handler(value);
+          if (res && res.length) res.forEach(c => classes.add(c));
+          else unsupported.push(`${property}: ${value}`);
+          continue;
+        }
+        unsupported.push(`${property}: ${value}`);
+      }
+
+      for (const block of selectorResult.blocks) {
+        const variantInfo = selectorVariant(block.selector);
+        if (!variantInfo) {
+          unsupported.push(block.selector);
+          continue;
+        }
+        const blockDecl = parseDeclarations(block.content);
+        for (const { property, value } of blockDecl) {
+          if (property.startsWith("--")) continue;
+          const handler = propertyHandlers[property];
+          if (handler) {
+            const res = handler(value);
+            if (res && res.length) {
+              if (variantInfo.base) res.forEach(c => classes.add(c));
+              else res.forEach(c => classes.add(`${variantInfo.variant}:${c}`));
+            } else {
+              unsupported.push(`${variantInfo.base ? "" : variantInfo.variant + " "}${property}: ${value}`);
+            }
+          } else {
+            unsupported.push(`${variantInfo.base ? "" : variantInfo.variant + " "}${property}: ${value}`);
+          }
+        }
+      }
+
+      for (const block of media) {
+        const override = mediaOverride[block.query];
+        const bp = override || breakpointFromQuery(block.query);
+        mediaMeta.push({ query: block.query, resolved: bp || null });
+        if (!bp) continue;
+        const mediaDeclarations = parseDeclarations(block.content);
+        for (const { property, value } of mediaDeclarations) {
+          if (property.startsWith("--")) continue;
+          const handler = propertyHandlers[property];
+          if (handler) {
+            const res = handler(value);
+            if (res && res.length) res.forEach(c => classes.add(`${bp}:${c}`));
+            else unsupported.push(`@${bp} ${property}: ${value}`);
+          } else {
+            unsupported.push(`@${bp} ${property}: ${value}`);
+          }
+        }
+      }
+
+      return { classes: Array.from(classes), unsupported, mediaMeta };
+    }
+
+    const propertyHandlers = {
+      "margin": value => handleBoxSpacing("m", value),
+      "margin-top": value => [buildSpacing("mt", value)],
+      "margin-right": value => [buildSpacing("mr", value)],
+      "margin-bottom": value => [buildSpacing("mb", value)],
+      "margin-left": value => [buildSpacing("ml", value)],
+      "padding": value => handleBoxSpacing("p", value),
+      "padding-top": value => [buildSpacing("pt", value)],
+      "padding-right": value => [buildSpacing("pr", value)],
+      "padding-bottom": value => [buildSpacing("pb", value)],
+      "padding-left": value => [buildSpacing("pl", value)],
+      "gap": value => handleGap(value),
+      "row-gap": value => handleGap(value, "y"),
+      "column-gap": value => handleGap(value, "x"),
+      "width": value => widthHeight("w", value),
+      "min-width": value => widthHeight("min-w", value),
+      "max-width": value => widthHeight("max-w", value),
+      "height": value => widthHeight("h", value),
+      "min-height": value => widthHeight("min-h", value),
+      "max-height": value => widthHeight("max-h", value),
+      "background": value => [colorToClass("bg", value)],
+      "background-color": value => [colorToClass("bg", value)],
+      "color": value => [colorToClass("text", value)],
+      "font-size": value => {
+        const match = pickFontSize(value);
+        return [match || `text-[${value.trim()}]`];
+      },
+      "font-weight": value => [weightMap[value.trim()] || weightMap[value.trim().replace(/\\D/g, "")] || `font-[${value.trim()}]`],
+      "font-family": value => [`font-[${value.trim()}]`],
+      "line-height": value => [lineHeightClass(value)],
+      "letter-spacing": value => [letterSpacingClass(value)],
+      "text-transform": value => [textTransformMap[value.trim().toLowerCase()] || `normal-case`],
+      "text-align": value => [textAlignMap[value.trim().toLowerCase()] || `text-[${value.trim()}]`],
+      "display": value => [displayMap[value.trim().toLowerCase()] || `hidden`],
+      "flex-direction": value => [flexDirectionMap[value.trim().toLowerCase()] || `flex-row`],
+      "justify-content": value => [justifyMap[value.trim().toLowerCase()] || `justify-[${value.trim()}]`],
+      "align-items": value => [alignItemsMap[value.trim().toLowerCase()] || `items-[${value.trim()}]`],
+      "align-content": value => [alignContentMap[value.trim().toLowerCase()] || `content-[${value.trim()}]`],
+      "align-self": value => {
+        const key = value.trim().toLowerCase();
+        if (alignItemsMap[key]) return alignItemsMap[key].replace("items", "self");
+        return `self-[${value.trim()}]`;
+      },
+      "flex-wrap": value => [value.trim() === "nowrap" ? "flex-nowrap" : value.trim() === "wrap-reverse" ? "flex-wrap-reverse" : "flex-wrap"],
+      "order": value => [/^-?\d+$/.test(value.trim()) ? `order-${value.trim()}` : `order-[${value.trim()}]`],
+      "background-size": value => [value.trim() === "cover" ? "bg-cover" : value.trim() === "contain" ? "bg-contain" : `bg-[${value.trim()}]`],
+      "background-position": value => [`bg-[${value.trim()}]`],
+      "background-repeat": value => {
+        const key = value.trim().toLowerCase();
+        if (key === "no-repeat") return ["bg-no-repeat"];
+        if (key === "repeat") return ["bg-repeat"];
+        if (key === "repeat-x") return ["bg-repeat-x"];
+        if (key === "repeat-y") return ["bg-repeat-y"];
+        return [`bg-[${value.trim()}]`];
+      },
+      "border-radius": value => [radiusClass(value)],
+      "border": value => borderClass(value),
+      "border-color": value => [colorToClass("border", value)],
+      "border-top-color": value => [colorToClass("border-t", value)],
+      "border-right-color": value => [colorToClass("border-r", value)],
+      "border-bottom-color": value => [colorToClass("border-b", value)],
+      "border-left-color": value => [colorToClass("border-l", value)],
+      "border-width": value => [borderWidthClass(value)],
+      "border-top-width": value => [borderWidthClass(value).replace("border", "border-t")],
+      "border-right-width": value => [borderWidthClass(value).replace("border", "border-r")],
+      "border-bottom-width": value => [borderWidthClass(value).replace("border", "border-b")],
+      "border-left-width": value => [borderWidthClass(value).replace("border", "border-l")],
+      "border-top": value => parseBorderSide("border-t", value),
+      "border-right": value => parseBorderSide("border-r", value),
+      "border-bottom": value => parseBorderSide("border-b", value),
+      "border-left": value => parseBorderSide("border-l", value),
+      "border-style": value => [value.trim() === "none" ? "border-0" : "border"],
+      "box-shadow": value => [boxShadowClass(value)],
+      "opacity": value => [opacityClass(value)],
+      "z-index": value => [zIndexClass(value)],
+      "position": value => [positionMap[value.trim().toLowerCase()] || `relative`],
+      "top": value => [buildSpacing("top", value)],
+      "right": value => [buildSpacing("right", value)],
+      "bottom": value => [buildSpacing("bottom", value)],
+      "left": value => [buildSpacing("left", value)],
+      "overflow": value => [overflowMap[value.trim().toLowerCase()] || `overflow-[${value.trim()}]`],
+      "overflow-x": value => {
+        const key = value.trim().toLowerCase();
+        return [overflowMap[key] ? overflowMap[key].replace("overflow-", "overflow-x-") : `overflow-x-[${value.trim()}]`];
+      },
+      "overflow-y": value => {
+        const key = value.trim().toLowerCase();
+        return [overflowMap[key] ? overflowMap[key].replace("overflow-", "overflow-y-") : `overflow-y-[${value.trim()}]`];
+      },
+      "object-fit": value => [`object-${value.trim().toLowerCase()}`],
+      "object-position": value => [`object-[${value.trim()}]`],
+      "text-decoration": value => [value.trim() === "underline" ? "underline" : value.trim() === "line-through" ? "line-through" : "no-underline"],
+      "white-space": value => [value.trim() === "nowrap" ? "whitespace-nowrap" : value.trim() === "pre" ? "whitespace-pre" : value.trim() === "pre-wrap" ? "whitespace-pre-wrap" : `whitespace-normal`],
+      "cursor": value => [`cursor-${value.trim()}`],
+      "list-style": value => [value.trim() === "none" ? "list-none" : value.trim() === "disc" ? "list-disc" : value.trim() === "decimal" ? "list-decimal" : `list-[${value.trim()}]`]
+    };
+
+    const cssInput = document.getElementById("cssInput");
+    const tailwindOutput = document.getElementById("tailwindOutput");
+  const convertBtn = document.getElementById("convertBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const statusText = document.getElementById("statusText");
+  const unsupportedBox = document.getElementById("unsupportedBox");
+  const unsupportedList = document.getElementById("unsupportedList");
+  const classCount = document.getElementById("classCount");
+  const unsupportedCount = document.getElementById("unsupportedCount");
+  const mediaPanel = document.getElementById("mediaPanel");
+  const mediaList = document.getElementById("mediaList");
+  const mediaOverride = {};
+
+  function render(result) {
+    const classString = result.classes.join(" ");
+    tailwindOutput.value = classString;
+    classCount.textContent = result.classes.length;
+    unsupportedCount.childNodes[0].textContent = `${result.unsupported.length} `;
+    unsupportedList.innerHTML = "";
+      if (result.unsupported.length) {
+        unsupportedBox.classList.add("visible");
+        for (const item of result.unsupported) {
+          const li = document.createElement("li");
+          li.textContent = item;
+          unsupportedList.appendChild(li);
+        }
+        statusText.textContent = "Bitte prüfe die rot markierten Deklarationen.";
+      } else {
+        unsupportedBox.classList.remove("visible");
+        statusText.textContent = "Alles sauber übersetzt.";
+      }
+
+    renderMediaPanel(result.mediaMeta);
+  }
+
+  function performTranslate() {
+    const result = translate(cssInput.value);
+    render(result);
+    }
+
+    let debounceTimer;
+    cssInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(performTranslate, 180);
+    });
+
+    cssInput.addEventListener("paste", event => {
+      event.preventDefault();
+      const paste = (event.clipboardData || window.clipboardData).getData("text");
+      const cleaned = paste.replace(/\t+/g, "  ");
+      const start = cssInput.selectionStart;
+      const end = cssInput.selectionEnd;
+      const before = cssInput.value.slice(0, start);
+      const after = cssInput.value.slice(end);
+      cssInput.value = before + cleaned + after;
+      const cursor = start + cleaned.length;
+      cssInput.selectionStart = cssInput.selectionEnd = cursor;
+      performTranslate();
+    });
+
+    convertBtn.addEventListener("click", performTranslate);
+
+    copyBtn.addEventListener("click", async () => {
+      if (!tailwindOutput.value.trim()) return;
+      try {
+        await navigator.clipboard.writeText(tailwindOutput.value.trim());
+        statusText.textContent = "Tailwind Klassen kopiert ✅";
+      } catch (e) {
+        statusText.textContent = "Clipboard nicht verfügbar, bitte manuell kopieren.";
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      cssInput.value = "";
+      tailwindOutput.value = "";
+      unsupportedBox.classList.remove("visible");
+      classCount.textContent = "0";
+      unsupportedCount.childNodes[0].textContent = "0 ";
+      statusText.textContent = "Bereit.";
+      mediaPanel.classList.remove("visible");
+      mediaList.innerHTML = "";
+      Object.keys(mediaOverride).forEach(k => delete mediaOverride[k]);
+    });
+
+    // Initial sample translation
+    performTranslate();
+
+    function renderMediaPanel(mediaMeta) {
+      if (!mediaMeta.length) {
+        mediaPanel.classList.remove("visible");
+        mediaList.innerHTML = "";
+        return;
+      }
+      mediaPanel.classList.add("visible");
+      mediaList.innerHTML = "";
+      const options = [
+        { label: "auto (Detection)", value: "auto" },
+        { label: "sm (≥640px)", value: "sm" },
+        { label: "md (≥768px)", value: "md" },
+        { label: "lg (≥1024px)", value: "lg" },
+        { label: "xl (≥1280px)", value: "xl" },
+        { label: "2xl (≥1536px)", value: "2xl" }
+      ];
+      const seen = new Set();
+      mediaMeta.forEach(({ query, resolved }) => {
+        if (seen.has(query)) return;
+        seen.add(query);
+        const item = document.createElement("div");
+        item.className = "media-item";
+        const title = document.createElement("div");
+        title.innerHTML = `@media (<code>${query}</code>)`;
+        const select = document.createElement("select");
+        options.forEach(opt => {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          const override = mediaOverride[query];
+          if (override === opt.value) o.selected = true;
+          else if (!override && opt.value === "auto") o.selected = true;
+          else if (!override && !resolved && opt.value === "auto") o.selected = true;
+          select.appendChild(o);
+        });
+        if (!mediaOverride[query] && resolved) {
+          select.value = resolved;
+        }
+        select.addEventListener("change", () => {
+          if (select.value === "auto") {
+            delete mediaOverride[query];
+          } else if (select.value) {
+            mediaOverride[query] = select.value;
+          }
+          performTranslate();
+        });
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = resolved ? `Auto erkannt: ${resolved}` : "Nicht erkannt – bitte wählen";
+        item.appendChild(title);
+        item.appendChild(select);
+        item.appendChild(hint);
+        mediaList.appendChild(item);
+      });
+    }
